@@ -1,1 +1,0 @@
-This is a learning activity for me to work on R Shiny Skills.  It pulls data from the Census Bureau and displays it in an R-Shiny Dashboard.  Errors are likely, please do not actually use this dashboard for anything.
