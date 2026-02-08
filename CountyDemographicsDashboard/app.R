@@ -208,7 +208,7 @@ ui <- grid_page(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
   
-  #  downloadDataFromCensusBureau() #comment out if data is preloaded in environment
+    downloadDataFromCensusBureau() #comment out if data is preloaded in environment
   
   countyAgeBySex_filtered <- reactive({
     filter(countyAgeBySex, str_detect(AGEGROUP, "^Age"),
