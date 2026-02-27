@@ -55,7 +55,8 @@ countyNamesList <- c("Adams", "Allen", "Ashland", "Ashtabula", "Athens", "Auglai
 ##Download Data from Census Bureau, can either be called from within dashboard or preloaded prior to launching Shiny App
 downloadDataFromCensusBureau <- function() { # create a function with the name my_function
   
-  countyAgeBySex <- 
+  
+  countyAgeBySex <<- 
     get_estimates( ## Get data for 2024 from the 2024 Census Population Estimate Program
       geography = "county",
       state = stateName,
@@ -67,7 +68,7 @@ downloadDataFromCensusBureau <- function() { # create a function with the name m
       cache_table = TRUE
     )
   
-  ohioAgeBySex <- get_estimates( ## Get data for 2024 from the 2024 Census Population Estimate Program
+  ohioAgeBySex <<- get_estimates( ## Get data for 2024 from the 2024 Census Population Estimate Program
     geography = "state",
     state = "OH",
     product = "characteristics",
@@ -79,7 +80,7 @@ downloadDataFromCensusBureau <- function() { # create a function with the name m
   ) 
   
   
-  medianHousholdIncome_county <- 
+  medianHousholdIncome_county <<- 
     get_acs(
       geography = "county",
       state = "OH",
@@ -92,7 +93,7 @@ downloadDataFromCensusBureau <- function() { # create a function with the name m
       cache_table = TRUE
     )
   
-  populationTotalEst_county <- get_estimates( ## Get data for 2024 from the 2024 Census Population Estimate Program
+  populationTotalEst_county <<- get_estimates( ## Get data for 2024 from the 2024 Census Population Estimate Program
     geography = "county",
     state = "OH",
     #    county = input$countySelect,
@@ -102,7 +103,7 @@ downloadDataFromCensusBureau <- function() { # create a function with the name m
     cache_table = TRUE
   )
   
-  povertyRate_county <- 
+  povertyRate_county <<- 
     get_acs(
       geography = "county",
       state = "OH",
@@ -157,7 +158,7 @@ downloadDataFromCensusBureau <- function() { # create a function with the name m
       state = str_split_i(NAME, ",\\s", 3)
     )
   
-  povertyRateTimeSeries <- getCensus(
+  povertyRateTimeSeries <<- getCensus(
     name = "timeseries/poverty/saipe",
     vars = c("NAME", "SAEPOVRTALL_PT"),
     region = "county",
@@ -166,7 +167,7 @@ downloadDataFromCensusBureau <- function() { # create a function with the name m
   
   ##race
   
-  race_county <- 
+  race_county <<- 
     get_acs(
       geography = "county",
       state = "OH",
@@ -176,7 +177,7 @@ downloadDataFromCensusBureau <- function() { # create a function with the name m
       survey = "acs5",
       ## output = "wide",
       cache_table = TRUE
-    )  
+    )
 }
 
 ##########################################################################
@@ -200,21 +201,21 @@ ui <- page_fluid(
                 layout_columns(
                   card(height = 800, plotOutput(outputId = "countyPopulationsPlot")),
                   card(plotOutput(outputId = "countyPopulationPyramid_2024"),
-                       plotOutput(outputId = "OhioPopulationPyramid_2024"),
+                       plotOutput(outputId = "OhioPopulationPyramid_2024")
                   ),
                   card(
                     card(height = 600, tmapOutput(outputId = "subdivisionTMap")),
                     card(height = 200, div(dataTableOutput(outputId = "subdivisionTable"), style = "font-size:70%"))
                   ),
                   col_widths = c(3, 3, 6)
-                ),
+                )
       ),
       nav_panel(title = "Income", 
                 layout_columns(
                   card(height = 800, plotOutput(outputId = "mhi_countyPlot")),
                   card(plotOutput(outputId = "MHIMap")),
                   col_widths = c(3, 9)
-                ),
+                )
                 #Add map of counties by MHI
       ),
       #      nav_panel(title = "Race and Ethnicity"),
@@ -223,25 +224,25 @@ ui <- page_fluid(
                   card(height = 800, plotOutput(outputId = "pov_countyPlot")),
                   card(height = 400, plotOutput(outputId = "povRate_CountyTimeseries")),
                   col_widths = c(3, 9)
-                ),
-      ),
+                )
+      )
       #      nav_panel(title = "Education"),
       #      nav_panel(title = "Workforce"),
       #      nav_panel(title = "Industry"),
       
     ),
     
-    footer = htmlOutput(outputId = "notes"), 
+    footer = htmlOutput(outputId = "notes") 
   ),
   
   ##wait screen
   
   autoWaiter(color= "#006699"),
   waiterPreloader(
-    html = "<h1>County Demographics Dashboard </h1> <br> <h3>Loading Census Data</h3> <br> <h4>This might take a minute...</h4>",
+    html = "<h1>County Demographics Dashboard </h1> <br> <h3>Loading Data</h3> <br> <h4>This might take a minute...</h4>",
     color= "#006699", 
     fadeout = TRUE
-  ),
+  )
   
 )
 
@@ -253,7 +254,7 @@ ui <- page_fluid(
 
 server <- function(input, output) {
   
-  #  downloadDataFromCensusBureau() #comment out if data is preloaded in environment
+  downloadDataFromCensusBureau() #comment out if data is preloaded in environment
   
   countyAgeBySex_filtered <- reactive({
     filter(countyAgeBySex, str_detect(AGEGROUP, "^Age"),
@@ -305,7 +306,7 @@ server <- function(input, output) {
       geom_col(width = 0.75, alpha = 0.75) +
       theme_minimal(base_size = 12) +
       scale_x_continuous(
-        labels = ~ label_comma()(abs(.x)),
+        labels = ~ label_comma()(abs(.x))
       ) +
       scale_y_discrete(labels = ~ str_remove_all(.x, "Age\\s|\\syears")) +
       scale_fill_manual(values = c("#CC0066", "#006699"), guide = FALSE) + # Colors from the NCAP Community Action Style Guide: https://communityactionpartnership.com/branding/
@@ -610,7 +611,7 @@ server <- function(input, output) {
   #### Note Block
   
   output$notes <- renderText({
-    paste("<b>Do not actually rely on this dashboard for any purpose. <br> This is very much a learning activity and almost certainly contains error.</b>", "Data was preloaded from the US Census Bureau API using the tidycensus R package.", "<br><br>", "I've borrowed heavily from:", "<br>", "Ted Laderas's sample code from his R for the Rest of Us Shiny Course at https://rfortherestofus.com and", "<br>", "Kyle Walker's samples from his website and tidycensus webinar at U-M SSDAN: https://walker-data.com </small> ")
+    paste("<b>Do not actually rely on this dashboard for any purpose. <br> This is very much a learning activity and almost certainly contains error.</b>", "Data was obtained from the US Census Bureau API using the tidycensus R package.", "<br><br>", "I've borrowed heavily from:", "<br>", "Ted Laderas's sample code from his R for the Rest of Us Shiny Course at https://rfortherestofus.com and", "<br>", "Kyle Walker's samples from his website and tidycensus webinar at U-M SSDAN: https://walker-data.com </small> ")
   })
   
   waiter_hide()  ## Removes loading screen once the startup process are done
